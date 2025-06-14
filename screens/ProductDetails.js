@@ -30,12 +30,18 @@ const ProductDetails = () => {
     }
   };
 
-  const renderColors = () => {
-    if (item.colors) {
-      return item.colors;
+  const Colors = () => {
+    if (item.color === 'red') {
+      return 'red';
+    } else if (item.color === 'blue') {
+      return 'blue';
+    } else if (item.color === 'green') {
+      return 'green';
+    } else {
+      return 'black';
     }
-    return[];
-  };
+  }
+
   const handleDecrement = () => {
     setQuantity(prev => Math.max(prev - 1, 1));
   };
@@ -71,7 +77,7 @@ const ProductDetails = () => {
             <Text style={styles.quantityText}>{`quantity : ${quantity}`}</Text>
             <Text style={styles.brandText}>{`brand : ${item.brand || 'No brand chosen'}`}</Text>
             <Text style={styles.descriptionText}>{`description : ${item.Discription || 'No description available'}`}</Text>
-            {renderColors() && <Text style={styles.colorText}>{`color : ${selectedColor || 'No color chosen'}`}</Text>}
+            <Text style={styles.colorText}>{`color : ${ Colors() || 'No color chosen'}`}</Text>
             
           </View>
 
