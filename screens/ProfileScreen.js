@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
+  SafeAreaView,
   View,
   Text,
   StyleSheet,
@@ -72,18 +73,19 @@ const ProfileScreen = () => {
 
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.profileHeader}>
-          <MaterialCommunityIcons
-            name="account-circle"
-            size={width * 0.3}
-            color="#007AFF"
-            style={styles.profileIcon}
-          />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.profileHeader}>
+            <MaterialCommunityIcons
+              name="account-circle"
+              size={width * 0.3}
+              color="#007AFF"
+              style={styles.profileIcon}
+            />
         </View>
 
         <View style={styles.section}>
@@ -140,7 +142,7 @@ const ProfileScreen = () => {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
-  );
+  </SafeAreaView>);
 };
 
 const styles = StyleSheet.create({

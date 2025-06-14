@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  SafeAreaView,
   View,
   Text,
   StyleSheet,
@@ -35,7 +36,8 @@ const Cart = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Cart</Text>
       </View>
@@ -78,11 +80,13 @@ const Cart = () => {
         <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
       </TouchableOpacity>
     </View>
+    </SafeAreaView>
   );
 };
 
+
 const styles = StyleSheet.create({
-  container: {
+  container:{
     flex: 1,
     backgroundColor: '#f5f5f5',
   },

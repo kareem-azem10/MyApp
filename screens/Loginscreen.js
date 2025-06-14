@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  SafeAreaView,
   View,
   Text,
   TextInput,
@@ -48,14 +49,15 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>Welcome Back</Text>
-        
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <View style={styles.formContainer}>
+          <Text style={styles.title}>Welcome Back</Text>
+          
+          {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <TextInput
           style={styles.input}
@@ -99,7 +101,7 @@ const LoginScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
-  );
+  </SafeAreaView>);
 };
 
 const styles = StyleSheet.create({
