@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   SafeAreaView,
   View,
@@ -18,28 +18,41 @@ const { width } = Dimensions.get('window');
 const ProductDetails = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const {item} = route.params;
+  const { item } = route.params;
+  const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState(item?.colors?.[0] || null);
 
-  if (!item) {
-    return null;
-  }
+  if (!item) return null;
+
+  const handleIncrement = () => {
+    if (item.inStock) {
+      setQuantity(prev => Math.min(prev + 1, item.quantity || 10));
+    }
+  };
+
+  const renderColors = () => {
+    if (item.colors) {
+      return item.colors;
+    }
+    return[];
+  };
+  const handleDecrement = () => {
+    setQuantity(prev => Math.max(prev - 1, 1));
+  };
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialCommunityIcons name="chevron-left" size={24} color="#007AFF" />
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton} 
-            onPress={() => navigation.goBack()}
-          >
-            <MaterialCommunityIcons name="chevron-left" size={24} color="#007AFF" />
-            <Text style={styles.backButtonText}>Back</Text>
-          </TouchableOpacity>
-
-        </View>
-
-        {/* Product Image */}
         <View style={styles.imageContainer}>
           <Image
             source={{ uri: item.ImageUrl }}
@@ -48,25 +61,51 @@ const ProductDetails = () => {
           />
         </View>
 
-        {/* Product Info */}
         <View style={styles.infoContainer}>
-          {/* Name */}
-          <Text style={styles.title}>{item.name}</Text>
-          {/* Price and Category */}
+          <Text style={styles.title}>{`product name : ${item.name}`}</Text>
+
           <View style={styles.priceContainer}>
-            <Text style={styles.price}>{item.price} ₪</Text>
-            <Text style={styles.category}>{item.category}</Text>
+            <Text style={styles.price}>{`price : ${item.price}₪`}</Text>
+            <Text style={styles.category}>{`category : ${item.category}`}</Text>
+            <Text style={styles.inStockText}>{`in stock : ${item.inStock ? 'available' : 'not available'}`}</Text>
+            <Text style={styles.quantityText}>{`quantity : ${quantity}`}</Text>
+            <Text style={styles.brandText}>{`brand : ${item.brand || 'No brand chosen'}`}</Text>
+            <Text style={styles.descriptionText}>{`description : ${item.Discription || 'No description available'}`}</Text>
+            {renderColors() && <Text style={styles.colorText}>{`color : ${selectedColor || 'No color chosen'}`}</Text>}
+            
           </View>
 
-          {/* Description */}
-          <View style={styles.section}>
-            <Text style={styles.description}>{item.Discription || 'No description available'}</Text>
+          <View style={styles.divider} />
+
+          <View style={styles.quantityContainer}>
+            <TouchableOpacity
+              style={styles.quantityButton}
+              onPress={handleDecrement}
+              disabled={quantity <= 1}
+            >
+              <Text style={styles.quantityButtonText}>-</Text>
+            </TouchableOpacity>
+
+            <View style={styles.quantityDisplay}>
+              <Text style={styles.quantityText}>{quantity}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.quantityButton}
+              onPress={handleIncrement}
+              disabled={!item.inStock || quantity >= (item.quantity || 10)}
+            >
+              <Text style={styles.quantityButtonText}>+</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Add to Cart Button */}
-          <TouchableOpacity style={styles.addToCartButton}>
-            <Text style={styles.addToCartText}>Add to Cart</Text>
-          </TouchableOpacity>
+          <View style={styles.divider} />
+
+          <View style={styles.totalPriceContainer}>
+            <Text style={styles.totalPrice}>{`total price : ${item.price * quantity}`}</Text>
+            <TouchableOpacity style={styles.addToCartButton}>
+              <Text style={styles.addToCartText}>Add to Cart</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -87,25 +126,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   backButton: {
-    marginTop: 23,
     marginRight: 16,
   },
-  title: {
-    fontSize: 20,
+  backButtonText: {
+    color: '#007AFF',
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
   },
   imageContainer: {
     width: '100%',
     height: width * 0.6,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
   productImage: {
     width: '90%',
     height: '90%',
-    backgroundColor: '#fff',
     borderRadius: 8,
     marginHorizontal: 16,
     marginVertical: 16,
@@ -116,6 +152,11 @@ const styles = StyleSheet.create({
   priceContainer: {
     marginBottom: 20,
   },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
   price: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -124,41 +165,93 @@ const styles = StyleSheet.create({
   },
   category: {
     fontSize: 16,
-    color: '#666',
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  inStockText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  quantityText: {
+    fontSize: 16,
+    color: '#333',
     fontWeight: 'bold',
     marginBottom: 8,
   },
-  section: {
+  brandText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  colorText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  colorOptionsContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    flexWrap: 'wrap',
+  },
+  colorOption: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  descriptionText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#007AFF',
+    marginVertical: 16,
+  },
+  quantityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 20,
   },
-  sectionTitle: {
-    fontSize: 18,
+  quantityButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 8,
+  },
+  quantityButtonText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  quantityDisplay: {
+    width: 60,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 8,
+  },
+  totalPriceContainer: {
+    alignItems: 'center',
+  },
+  totalPrice: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 8,
-  },
-  description: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 20,
-    fontWeight: 'bold',
-  },
-  specsContainer: {
-    marginTop: 8,
-  },
-  specItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  specKey: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '600',
-  },
-  specValue: {
-    fontSize: 16,
-    color: '#666',
   },
   addToCartButton: {
     backgroundColor: '#007AFF',
@@ -166,14 +259,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 20,
+    width: '100%',
   },
   addToCartText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  backButtonText: {
-    color: '#007AFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
