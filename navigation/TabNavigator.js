@@ -6,6 +6,7 @@ import HomeScreen from '../screens/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import Cart from '../screens/Cart';
 
+
 const Tab = createMaterialBottomTabNavigator();
 
 const TabNavigator = () => {

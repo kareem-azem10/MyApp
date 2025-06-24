@@ -62,30 +62,39 @@ const RegisterScreen = ({ navigation }) => {
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
+          <View style={styles.inputContainer}>
+  <TextInput
+    style={styles.input}
+    placeholder="Email"
+    value={email}
+    onChangeText={setEmail}
+    keyboardType="email-address"
+    autoCapitalize="none"
+  />
+</View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-        />
+<View style={styles.inputContainer}>
+  <TextInput
+    style={styles.input}
+    placeholder="Password"
+    value={password}
+    onChangeText={setPassword}
+    secureTextEntry
+  />
+</View>
+
+
+<View style={styles.inputContainer}>
+  <TextInput
+    style={styles.input}
+    placeholder="Confirm Password"
+    value={confirmPassword}
+    onChangeText={setConfirmPassword}
+    secureTextEntry
+  />
+</View>
+
 
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Register</Text>
@@ -103,61 +112,66 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#EAF0F6',
+    justifyContent: 'center',
   },
   formContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    backgroundColor: '#ffffff',
     marginHorizontal: 20,
+    borderRadius: 16,
+    paddingVertical: 40,
+    paddingHorizontal: 24,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 8,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 30,
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#1A1A1A',
     textAlign: 'center',
-    color: '#333',
+    marginBottom: 24,
+  },
+  error: {
+    color: '#FF3B30',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  inputContainer: {
+    marginBottom: 16,
+    borderRadius: 10,
+    backgroundColor: '#F2F4F7',
+    paddingHorizontal: 10,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
+    height: 48,
     fontSize: 16,
+    color: '#1A1A1A',
   },
   button: {
     backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 15,
+    marginTop: 10,
+    elevation: 3,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   link: {
-    marginTop: 15,
-    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
     color: '#007AFF',
-  },
-  error: {
-    color: 'red',
     textAlign: 'center',
-    marginBottom: 10,
+    textDecorationLine: 'underline',
   },
 });
+
 
 export default RegisterScreen;

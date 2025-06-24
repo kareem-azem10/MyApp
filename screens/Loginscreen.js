@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import {
-  SafeAreaView,
+import React, { useState, useEffect } from 'react';
+import { 
   View,
   Text,
   TextInput,
@@ -9,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { auth, signInWithEmailAndPassword } from '../firebaseConfig';
 
@@ -17,157 +17,231 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fadeAnim] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
+
+  const handleBack = () => {
+    navigation.goBack();
+  };
 
   const handleLogin = async () => {
-    setError('');
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+
     setLoading(true);
+    setError('');
 
     try {
-      if (!email.includes('@')) {
-        throw new Error('Please enter a valid email address');
-      }
-
       await signInWithEmailAndPassword(auth, email, password);
       navigation.navigate('Main');
-    } catch (err) {
-      switch (err.code) {
-        case 'user-not-found':
-          setError('No user found with this email');
-          break;
-        case 'wrong-password':
-          setError('Incorrect password');
-          break;
-        case 'invalid-email':
-          setError('Invalid email address');
-          break;
-        default:
-          setError(err.message);
-      }
+    } catch (error) {
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-      >
-        <View style={styles.formContainer}>
-          <Text style={styles.title}>Welcome Back</Text>
-          
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <View style={styles.formContainer}>
+        <View style={styles.titleContainer}>
+          <View style={styles.titleInnerContainer}>
+            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+              <Text style={styles.backButtonText}>←</Text>
+            </TouchableOpacity>
+            <Animated.Text style={[styles.title, { opacity: fadeAnim }]}>
+              Welcome Back
+            </Animated.Text>
+          </View>
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          placeholderTextColor="#666"
-        />
+        {error && <Text style={styles.error}>{error}</Text>}
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholderTextColor="#666"
-        />
+        <View style={styles.inputSection}>
+          <View style={styles.inputContainer}>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email"
+              placeholderTextColor="rgba(0, 0, 0, 0.5)"
+              style={styles.input}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <Animated.View
+              style={[styles.inputBorder, { opacity: email ? 1 : 0 }]}
+            />
+          </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Login</Text>
-          )}
-        </TouchableOpacity>
+          <View style={styles.inputContainer}>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Password"
+              placeholderTextColor="rgba(0, 0, 0, 0.5)"
+              style={styles.input}
+              secureTextEntry
+            />
+            <Animated.View
+              style={[styles.inputBorder, { opacity: password ? 1 : 0 }]}
+            />
+          </View>
+        </View>
 
-        <TouchableOpacity 
-          style={styles.registerButton} 
-          onPress={() => navigation.navigate('Register')}
+        <Animated.View
+          style={{
+            opacity: fadeAnim,
+            transform: [{ scale: fadeAnim }],
+          }}
         >
-          <Text style={styles.registerText}>Don't have an account? Register</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleLogin}
+            disabled={loading}
+            style={styles.button}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Login</Text>
+            )}
+          </TouchableOpacity>
+        </Animated.View>
 
-        <TouchableOpacity 
-          style={styles.registerButton} 
-          onPress={() => navigation.navigate('Main')}
-        >
-          <Text style={styles.registerText}>Skip</Text>
-        </TouchableOpacity>
+        <View style={styles.registerButton}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Register')}
+            style={styles.registerButton}
+          >
+            <Animated.Text
+              style={[styles.registerText, { opacity: fadeAnim }]}
+            >
+              Dont have an account? Register
+            </Animated.Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.footer}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Register')}
+            style={styles.registerButton}
+          >
+            <Text style={styles.registerText}>Skip</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
-  </SafeAreaView>);
+  );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#EAF0F6',
+    justifyContent: 'center',
   },
   formContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    backgroundColor: '#ffffff',
     marginHorizontal: 20,
+    borderRadius: 16,
+    paddingVertical: 40,
+    paddingHorizontal: 24,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  titleContainer: {
+    marginBottom: 30,
+    alignItems: 'center',
+  },
+  titleInnerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 30,
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginLeft: 12,
+  },
+  backButton: {
+    backgroundColor: '#007AFF',
+    padding: 10,
+    borderRadius: 12,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  error: {
+    color: '#FF3B30',
+    fontSize: 14,
     textAlign: 'center',
-    color: '#333',
+    marginBottom: 10,
+  },
+  inputSection: {
+    marginBottom: 24,
+  },
+  inputContainer: {
+    marginBottom: 16,
+    borderRadius: 10,
+    backgroundColor: '#F2F4F7',
+    paddingHorizontal: 10,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
+    height: 48,
     fontSize: 16,
-    backgroundColor: '#f8f8f8',
+    color: '#1A1A1A',
+  },
+  inputBorder: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    height: 2,
+    width: '100%',
+    backgroundColor: '#007AFF',
   },
   button: {
     backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 15,
+    marginTop: 10,
+    elevation: 3,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   registerButton: {
-    marginTop: 15,
+    marginTop: 20,
     alignItems: 'center',
   },
   registerText: {
-    color: '#007AFF',
     fontSize: 16,
+    color: '#007AFF',
     textDecorationLine: 'underline',
   },
-  error: {
-    color: '#ff3b30',
-    textAlign: 'center',
-    marginBottom: 10,
-    fontSize: 14,
+  footer: {
+    marginTop: 16,
+    alignItems: 'center',
   },
 });
+
 
 export default LoginScreen;

@@ -17,13 +17,14 @@ const MainNavigation = () => {
     <NavigationContainer>
       <Stack.Navigator 
         screenOptions={{ 
+          initialRouteName : "Main",
           headerShown: false,
           animation: 'slide_from_right'
         }}
       >
+        <Stack.Screen name="Main" component={TabNavigator} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="Main" component={TabNavigator} />
         <Stack.Screen name="Cart" component={Cart} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="HomeScreen" component={HomeScreen} />

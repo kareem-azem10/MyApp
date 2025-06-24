@@ -31,14 +31,16 @@ const ProductDetails = () => {
   };
 
   const Colors = () => {
-    if (item.color === 'red') {
-      return 'red';
-    } else if (item.color === 'blue') {
-      return 'blue';
-    } else if (item.color === 'green') {
-      return 'green';
-    } else {
+    if (item.Colors === 'black') {
       return 'black';
+    } else if (item.Colors === 'yellow') {
+      return 'yellow';
+    } else if (item.Colors === 'green') {
+      return 'green';
+    } else if (item.Colors === 'blue') {
+      return 'blue';
+    } else if (item.Colors === 'pink') {
+      return 'pink';
     }
   }
 
