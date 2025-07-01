@@ -1,16 +1,17 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, { useState, useEffect } from 'react'
-import { SafeAreaView } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Image, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { TouchableOpacity } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { auth } from '../firebaseConfig';
-import Icon from 'react-native-vector-icons/FontAwesome'; // assuming you have a firebase config file
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
+  const [image, setImage] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
       if (user) {
         setEmail(user.email);
@@ -19,12 +20,11 @@ const ProfileScreen = () => {
     return unsubscribe;
   }, []);
 
+  if (!email) {
+    navigation.navigate('UserLogOut');
+  }
 
-if (!email) {
-  navigation.navigate('Login');
-}
-
-const handleLogout = async () => {
+  const handleLogout = async () => {
     try {
       await auth.signOut();
       navigation.navigate('Login');
@@ -33,50 +33,83 @@ const handleLogout = async () => {
     }
   };
 
+  const pickImage = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Permission denied', 'Allow access to media library to pick a profile image.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Image pick error:', error);
+    }
+  };
+
   return (
     <SafeAreaView>
       <Text style={styles.text}>Profile Info</Text>
       <View style={styles.divider} />
-      
-      <View style={styles.profileIcon}>
-        <Icon name="user-circle" size={100} color="#666" />
-      </View>
 
-      <Text style={styles.text}>{`email:${email}`}</Text>
+      <TouchableOpacity onPress={pickImage} style={styles.profileIcon}>
+        {image ? (
+          <Image source={{ uri: image }} style={styles.profileImage} />
+        ) : (
+          <Icon name="user-circle" size={100} color="#666" />
+        )}
+      </TouchableOpacity>
+
+      <Text style={styles.text}>{`Email: ${email}`}</Text>
+
       <TouchableOpacity style={styles.button} onPress={handleLogout}>
         <Text>Logout</Text>
       </TouchableOpacity>
     </SafeAreaView>
-  )
-}
+  );
+};
 
-export default ProfileScreen
+export default ProfileScreen;
 
 const styles = StyleSheet.create({
-    text:{
-        fontSize:20,
-        color:"black",
-        textAlign:"center",
-        marginTop:'10%'
-    },
-    button:{
-        backgroundColor:'white',
-        padding:15,
-        borderRadius:5,
-        borderColor:'black',
-        borderWidth:1,
-        marginTop:20,
-        alignItems:'center',
-        width:'50%',
-        marginHorizontal:'25%'
-    },
-    divider:{
-      height: 1,
-      backgroundColor: '#000',
-      marginVertical: 16,
-    },
-    profileIcon: {
-      alignItems: 'center',
-      marginBottom: 16,
-    },
-})
+  text: {
+    fontSize: 20,
+    color: 'black',
+    textAlign: 'center',
+    marginTop: '10%',
+  },
+  button: {
+    backgroundColor: 'white',
+    padding: 15,
+    borderRadius: 5,
+    borderColor: 'black',
+    borderWidth: 1,
+    marginTop: 20,
+    alignItems: 'center',
+    width: '50%',
+    marginHorizontal: '25%',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#000',
+    marginVertical: 16,
+  },
+  profileIcon: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+});

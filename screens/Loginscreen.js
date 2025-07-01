@@ -11,6 +11,7 @@ import {
   Animated,
 } from 'react-native';
 import { auth, signInWithEmailAndPassword } from '../firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -42,6 +43,9 @@ const LoginScreen = ({ navigation }) => {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      // Store the user's credentials securely
+      await AsyncStorage.setItem('userEmail', email);
+      await AsyncStorage.setItem('userPassword', password);
       navigation.navigate('Main');
     } catch (error) {
       setError(error.message);
