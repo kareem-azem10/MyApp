@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductCard from '../../components/ProductCard';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
-import { getAllProducts } from '../../services/productService';
+import { getAllProducts, seedSampleProducts } from '../../services/productService';
 
 export default function HomeScreen() {
   const [products, setProducts] = useState([]);
@@ -30,7 +30,14 @@ export default function HomeScreen() {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const productsData = await getAllProducts();
+      let productsData = await getAllProducts();
+      // If empty, seed sample data once, then reload
+      if (!productsData || productsData.length === 0) {
+        const seeded = await seedSampleProducts();
+        if (seeded) {
+          productsData = await getAllProducts();
+        }
+      }
       setProducts(productsData);
     } catch (error) {
       Alert.alert('Error', 'Failed to load products');

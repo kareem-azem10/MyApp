@@ -12,6 +12,7 @@ import {
   where
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { sampleProducts } from '../scripts/sampleData';
 
 // Collection reference
 const productsCollection = collection(db, 'products');
@@ -42,6 +43,25 @@ export const getAllProducts = async () => {
     return products;
   } catch (error) {
     throw new Error('Error getting products: ' + error.message);
+  }
+};
+
+// Seed sample products if collection is empty
+export const seedSampleProducts = async () => {
+  try {
+    const snapshot = await getDocs(productsCollection);
+    if (!snapshot.empty) return false;
+
+    for (const product of sampleProducts) {
+      await addDoc(productsCollection, {
+        ...product,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+    return true;
+  } catch (error) {
+    throw new Error('Error seeding products: ' + error.message);
   }
 };
 

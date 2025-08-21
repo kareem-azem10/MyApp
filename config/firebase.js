@@ -1,19 +1,33 @@
-import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
+import {
+  initializeAuth,
+  getReactNativePersistence,
+  GoogleAuthProvider,
+} from "firebase/auth";
+import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCR1qzhIjhk4_4QXJ_wDIwoe7w2FuQejYI",
-  authDomain: "myapp-cec96.firebaseapp.com",
-  projectId: "myapp-cec96",
-  storageBucket: "myapp-cec96.firebasestorage.app",
-  messagingSenderId: "232684482497",
-  appId: "1:232684482497:web:d6765a3704661eb2f30940",
-  measurementId: "G-GJBG0ZX2ET"
+  apiKey: "AIzaSyC-GXDhYhhQPQAZGcoaycGWgARMqA0hVWk",
+  authDomain: "myapp-983cd.firebaseapp.com",
+  projectId: "myapp-983cd",
+  storageBucket: "myapp-983cd.firebasestorage.app",
+  messagingSenderId: "334965882813",
+  appId: "1:334965882813:web:b5989749271b3aeb3edcd4",
+  measurementId: "G-9JDSZEQGGV"
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const analytics = getAnalytics(app);
 
-export { analytics, app, auth };
+// Use initializeAuth with React Native persistence
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+});
+
+// Firestore instance for data access
+const db = getFirestore(app);
+
+const googleProvider = new GoogleAuthProvider();
+
+export { app, auth, db, googleProvider };
 
