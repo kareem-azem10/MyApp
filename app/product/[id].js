@@ -2,15 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Image,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useCart } from '../../contexts/CartContext';
 import { getProductById } from '../../services/productService';
@@ -44,8 +45,15 @@ export default function ProductDetailScreen() {
   const handleAddToCart = () => {
     if (product) {
       addToCart({ ...product, quantity });
-      Alert.alert('Success', `${product.name} added to cart!`);
       setQuantity(1);
+      Alert.alert(
+        'Added to Cart',
+        `${product.name} was added to your cart.`,
+        [
+          { text: 'Continue shopping', style: 'cancel' },
+          { text: 'Go to cart', onPress: () => router.push('/(tabs)/cart') },
+        ]
+      );
     }
   };
 
@@ -95,9 +103,11 @@ export default function ProductDetailScreen() {
 
         {/* Product Image */}
         <View style={styles.imageContainer}>
-          <View style={styles.imagePlaceholder}>
-            <Ionicons name="phone-portrait" size={120} color="#007AFF" />
-          </View>
+          <Image
+            source={{ uri: product.imageUrl || 'https://via.placeholder.com/800x600.png?text=Product' }}
+            style={styles.image}
+            resizeMode="contain"
+          />
           {product.discount && (
             <View style={styles.discountBadge}>
               <Text style={styles.discountText}>{product.discount}% OFF</Text>
@@ -220,11 +230,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  imagePlaceholder: {
+  image: {
     width: '100%',
     height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#f0f0f0',
   },
   discountBadge: {

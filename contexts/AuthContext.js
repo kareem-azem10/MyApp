@@ -2,16 +2,26 @@ import {
     createUserWithEmailAndPassword,
     onAuthStateChanged,
     signInWithEmailAndPassword,
-    signInWithPopup,
     signOut
 } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth, googleProvider } from '../config/firebase';
+import { auth } from '../config/firebase';
 
-const AuthContext = createContext({});
+const AuthContext = createContext({
+  user: null,
+  loading: true,
+  signup: () => {},
+  login: () => {},
+  logout: () => {},
+  signInWithGoogle: () => {},
+});
 
 export const useAuth = () => {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
 
 export const AuthProvider = ({ children }) => {
@@ -41,15 +51,18 @@ export const AuthProvider = ({ children }) => {
 
   const signInWithGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      return result;
+      // For now, Google Sign-In is disabled in Expo Go
+      // You'll need to implement this using expo-auth-session when building for production
+      throw new Error('Google Sign-In is not available in Expo Go. Please build the app for production to use this feature.');
     } catch (error) {
-      throw error;
+      console.error('Google Sign-In Error:', error);
+      throw new Error('Google Sign-In is not available in Expo Go. Please build the app for production to use this feature.');
     }
   };
 
   const value = {
     user,
+    loading,
     signup,
     login,
     logout,
@@ -58,7 +71,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

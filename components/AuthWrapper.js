@@ -1,16 +1,13 @@
-import { router } from 'expo-router';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function AuthWrapper({ children }) {
   const { user, loading } = useAuth();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace('/auth/login');
-    }
-  }, [user, loading]);
+  // Allow guest access - don't redirect to login automatically
+  // Users can browse and shop without authentication
+  // Authentication is only required for checkout
 
   if (loading) {
     return (
@@ -20,10 +17,7 @@ export default function AuthWrapper({ children }) {
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
+  // Always render children, regardless of authentication status
   return children;
 }
 

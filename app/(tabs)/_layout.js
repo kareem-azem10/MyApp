@@ -72,10 +72,11 @@ export default function TabLayout() {
               <Ionicons 
                 name={focused ? "person" : "person-outline"} 
                 size={28} 
-              color={color} 
-            />
-          ),
-        }}
+                color={color} 
+              />
+            ),
+          }}
+        />
       />
     </Tabs>
   </AuthWrapper>

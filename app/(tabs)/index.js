@@ -7,21 +7,20 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ProductCard from '../../components/ProductCard';
 import { useAuth } from '../../contexts/AuthContext';
-import { useCart } from '../../contexts/CartContext';
-import { getAllProducts, seedSampleProducts } from '../../services/productService';
+import { getAllProducts } from '../../services/productService';
 
 export default function HomeScreen() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useAuth();
-  const { addToCart } = useCart();
 
   useEffect(() => {
     loadProducts();
@@ -30,14 +29,7 @@ export default function HomeScreen() {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      let productsData = await getAllProducts();
-      // If empty, seed sample data once, then reload
-      if (!productsData || productsData.length === 0) {
-        const seeded = await seedSampleProducts();
-        if (seeded) {
-          productsData = await getAllProducts();
-        }
-      }
+      const productsData = await getAllProducts();
       setProducts(productsData);
     } catch (error) {
       Alert.alert('Error', 'Failed to load products');
@@ -53,11 +45,6 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
-  const handleAddToCart = (product) => {
-    addToCart(product);
-    Alert.alert('Success', `${product.name} added to cart!`);
-  };
-
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -71,14 +58,29 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>ElectroStore</Text>
-        <Text style={styles.subtitle}>Welcome back, {user?.email?.split('@')[0]}!</Text>
+        {user ? (
+          <Text style={styles.subtitle}>Welcome back, {user.email.split('@')[0]}!</Text>
+        ) : (
+          <View style={styles.guestWelcome}>
+            <Text style={styles.subtitle}>Welcome to ElectroStore!</Text>
+            <Text style={styles.guestSubtitle}>
+              Browse our products and sign in when you're ready to checkout
+            </Text>
+            <TouchableOpacity
+              style={styles.signInPrompt}
+              onPress={() => router.push('/auth/login')}
+            >
+              <Text style={styles.signInPromptText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <FlatList
         data={products}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <ProductCard product={item} onAddToCart={handleAddToCart} />
+          <ProductCard product={item} />
         )}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -118,6 +120,28 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#666',
+  },
+  guestWelcome: {
+    marginTop: 8,
+  },
+  guestSubtitle: {
+    fontSize: 14,
+    color: '#999',
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  signInPrompt: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    marginTop: 12,
+  },
+  signInPromptText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   loadingContainer: {
     flex: 1,

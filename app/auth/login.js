@@ -2,14 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -28,6 +28,9 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       await login(email, password);
+      
+      // Check if user came from cart (you can implement this with route params or context)
+      // For now, just go to tabs
       router.replace('/(tabs)');
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -107,6 +110,14 @@ export default function LoginScreen() {
             </Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.skipButton}
+            onPress={() => router.replace('/(tabs)')}
+          >
+            <Text style={styles.skipText}>
+              Continue as Guest
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.linkButton}
             onPress={() => router.push('/auth/signup')}
@@ -195,5 +206,16 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#007AFF',
     fontSize: 16,
+  },
+  skipButton: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 16,
+    paddingVertical: 8,
+  },
+  skipText: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

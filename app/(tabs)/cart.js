@@ -1,25 +1,49 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React from 'react';
 import {
-  Alert,
-  FlatList,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    FlatList,
+    Image,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
+import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 
 export default function CartScreen() {
   const { items, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
+  const { user } = useAuth();
 
   const handleCheckout = () => {
     if (items.length === 0) {
       Alert.alert('Empty Cart', 'Your cart is empty');
       return;
     }
+
+    // Check if user is logged in
+    if (!user) {
+      Alert.alert(
+        'Ready to Checkout?',
+        'You\'re almost there! Just sign in to complete your order and track your purchase.',
+        [
+          { text: 'Continue Shopping', style: 'cancel' },
+          { 
+            text: 'Sign In Now', 
+            onPress: () => {
+              // Navigate to login screen
+              router.push('/auth/login');
+            }
+          }
+        ]
+      );
+      return;
+    }
     
+    // User is logged in, proceed with checkout
     Alert.alert(
       'Checkout',
       `Total: $${getCartTotal().toFixed(2)}\n\nProceed to checkout?`,
@@ -28,7 +52,8 @@ export default function CartScreen() {
         { 
           text: 'Checkout', 
           onPress: () => {
-            Alert.alert('Success', 'Order placed successfully!');
+            // Navigate to order confirmation screen
+            router.push('/order-confirmation');
             clearCart();
           }
         }
@@ -39,7 +64,11 @@ export default function CartScreen() {
   const renderCartItem = ({ item }) => (
     <View style={styles.cartItem}>
       <View style={styles.itemImage}>
-        <Ionicons name="phone-portrait" size={40} color="#007AFF" />
+        <Image
+          source={{ uri: item.imageUrl || 'https://via.placeholder.com/120x120.png?text=Product' }}
+          style={styles.itemImageImg}
+          resizeMode="contain"
+        />
       </View>
       
       <View style={styles.itemDetails}>
@@ -85,6 +114,26 @@ export default function CartScreen() {
           <Text style={styles.emptySubtitle}>
             Add some products to get started
           </Text>
+          
+          {!user && (
+            <View style={styles.emptyAuthContainer}>
+              <Text style={styles.emptyAuthText}>
+                Sign in to save your cart and get faster checkout
+              </Text>
+              <TouchableOpacity
+                style={styles.emptySignInButton}
+                onPress={() => router.push('/auth/login')}
+              >
+                <Text style={styles.emptySignInButtonText}>Sign In</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.emptySkipButton}
+                onPress={() => router.push('/(tabs)')}
+              >
+                <Text style={styles.emptySkipText}>Continue Shopping</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </SafeAreaView>
     );
@@ -95,6 +144,34 @@ export default function CartScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Shopping Cart</Text>
         <Text style={styles.itemCount}>{items.length} items</Text>
+        
+        {/* Authentication Status */}
+        {!user ? (
+          <View style={styles.authStatus}>
+            <Ionicons name="info-circle" size={16} color="#007AFF" />
+            <Text style={styles.authStatusText}>You can browse and add items to cart</Text>
+            <Text style={styles.authStatusSubtext}>Sign in when you're ready to checkout</Text>
+            <View style={styles.authButtons}>
+              <TouchableOpacity
+                style={styles.signInButton}
+                onPress={() => router.push('/auth/login')}
+              >
+                <Text style={styles.signInButtonText}>Sign In</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.guestButton}
+                onPress={() => router.push('/auth/signup')}
+              >
+                <Text style={styles.guestButtonText}>Create Account</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.authStatus}>
+            <Ionicons name="checkmark-circle" size={16} color="#34C759" />
+            <Text style={styles.authStatusText}>Signed in as {user.email}</Text>
+          </View>
+        )}
       </View>
 
       <FlatList
@@ -128,10 +205,13 @@ export default function CartScreen() {
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={styles.checkoutButton}
+            style={[styles.checkoutButton, !user && styles.checkoutButtonDisabled]}
             onPress={handleCheckout}
+            disabled={!user}
           >
-            <Text style={styles.checkoutButtonText}>Checkout</Text>
+            <Text style={styles.checkoutButtonText}>
+              {user ? 'Proceed to Checkout' : 'Checkout (Sign In Required)'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -160,6 +240,55 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
+  authStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#e1e5e9',
+  },
+  authStatusText: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 8,
+    flex: 1,
+  },
+  authStatusSubtext: {
+    fontSize: 12,
+    color: '#999',
+    marginLeft: 8,
+    marginTop: 2,
+    flex: 1,
+  },
+  authButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  signInButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  signInButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  guestButton: {
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  guestButtonText: {
+    color: '#007AFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   cartList: {
     padding: 16,
   },
@@ -187,6 +316,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+    overflow: 'hidden',
+  },
+  itemImageImg: {
+    width: '100%',
+    height: '100%',
   },
   itemDetails: {
     flex: 1,
@@ -272,6 +406,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
+  checkoutButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
   checkoutButtonText: {
     color: '#fff',
     fontSize: 16,
@@ -294,5 +431,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+  },
+  emptyAuthContainer: {
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  emptyAuthText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  emptySignInButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  emptySignInButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  emptySkipButton: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    marginTop: 12,
+  },
+  emptySkipText: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

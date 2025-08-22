@@ -1,7 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useReducer } from 'react';
 
-const CartContext = createContext();
+const CartContext = createContext({
+  items: [],
+  addToCart: () => {},
+  removeFromCart: () => {},
+  updateQuantity: () => {},
+  clearCart: () => {},
+  getCartTotal: () => 0,
+  getCartItemCount: () => 0,
+});
 
 const cartReducer = (state, action) => {
   switch (action.type) {

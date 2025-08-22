@@ -1,20 +1,46 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React from 'react';
 import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
-import { useCart } from '../../contexts/CartContext';
+
+const MenuItem = ({ icon, title, description, onPress, showArrow = true }) => (
+  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+    <View style={styles.menuItemLeft}>
+      <View style={styles.iconContainer}>
+        <Ionicons name={icon} size={24} color="#007AFF" />
+      </View>
+      <View style={styles.menuItemText}>
+        <Text style={styles.menuItemTitle}>{title}</Text>
+        <Text style={styles.menuItemDescription}>{description}</Text>
+      </View>
+    </View>
+    {showArrow && (
+      <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+    )}
+  </TouchableOpacity>
+);
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
-  const { clearCart } = useCart();
+  const { user, logout, loading } = useAuth();
+
+  // Show loading state while auth is initializing
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading profile...</Text>
+        </View>
+      </View>
+    );
+  }
 
   const handleLogout = () => {
     Alert.alert(
@@ -22,213 +48,262 @@ export default function ProfileScreen() {
       'Are you sure you want to logout?',
       [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              clearCart();
-              await logout();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to logout');
-            }
-          },
-        },
+        { text: 'Logout', style: 'destructive', onPress: logout },
       ]
     );
   };
 
-  const menuItems = [
-    {
-      icon: 'person-outline',
-      title: 'Personal Information',
-      subtitle: 'Manage your account details',
-      onPress: () => Alert.alert('Coming Soon', 'This feature will be available soon'),
-    },
-    {
-      icon: 'card-outline',
-      title: 'Payment Methods',
-      subtitle: 'Manage your payment options',
-      onPress: () => Alert.alert('Coming Soon', 'This feature will be available soon'),
-    },
-    {
-      icon: 'location-outline',
-      title: 'Shipping Addresses',
-      subtitle: 'Manage your delivery addresses',
-      onPress: () => Alert.alert('Coming Soon', 'This feature will be available soon'),
-    },
-    {
-      icon: 'document-text-outline',
-      title: 'Order History',
-      subtitle: 'View your past orders',
-      onPress: () => Alert.alert('Coming Soon', 'This feature will be available soon'),
-    },
-    {
-      icon: 'settings-outline',
-      title: 'Settings',
-      subtitle: 'App preferences and notifications',
-      onPress: () => Alert.alert('Coming Soon', 'This feature will be available soon'),
-    },
-    {
-      icon: 'help-circle-outline',
-      title: 'Help & Support',
-      subtitle: 'Get help and contact support',
-      onPress: () => Alert.alert('Coming Soon', 'This feature will be available soon'),
-    },
-  ];
+  const handlePersonalInfo = () => {
+    Alert.alert('Personal Information', 'This feature will be implemented soon!');
+  };
+
+  const handlePaymentMethods = () => {
+    Alert.alert('Payment Methods', 'This feature will be implemented soon!');
+  };
+
+  const handleShippingAddresses = () => {
+    Alert.alert('Shipping Addresses', 'This feature will be implemented soon!');
+  };
+
+  const handleOrderHistory = () => {
+    Alert.alert('Order History', 'This feature will be implemented soon!');
+  };
+
+  const handleSettings = () => {
+    Alert.alert('Settings', 'This feature will be implemented soon!');
+  };
+
+  const handleHelpSupport = () => {
+    Alert.alert('Help & Support', 'This feature will be implemented soon!');
+  };
+
+  // If user is not authenticated, show guest profile
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        {/* Guest Header */}
+        <View style={styles.header}>
+          <View style={styles.profileInfo}>
+            <View style={styles.avatar}>
+              <Ionicons name="person-outline" size={40} color="#007AFF" />
+            </View>
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>Guest User</Text>
+              <Text style={styles.userEmail}>Sign in to access your profile</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Guest Menu Items */}
+        <ScrollView style={styles.menuContainer} showsVerticalScrollIndicator={false}>
+          <MenuItem
+            icon="log-in-outline"
+            title="Sign In"
+            description="Access your account and order history"
+            onPress={() => router.push('/auth/login')}
+          />
+          
+          <MenuItem
+            icon="person-add-outline"
+            title="Create Account"
+            description="Join ElectroStore for faster checkout"
+            onPress={() => router.push('/auth/signup')}
+          />
+          
+          <MenuItem
+            icon="help-circle-outline"
+            title="Help & Support"
+            description="Get help and contact support"
+            onPress={handleHelpSupport}
+          />
+          
+          <MenuItem
+            icon="information-circle-outline"
+            title="About ElectroStore"
+            description="Learn more about our services"
+            onPress={() => Alert.alert('About', 'ElectroStore - Your trusted electronics retailer')}
+          />
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <View style={styles.header}>
-          <View style={styles.avatarContainer}>
-            <Ionicons name="person" size={60} color="#007AFF" />
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.profileInfo}>
+          <View style={styles.avatar}>
+            <Ionicons name="person" size={40} color="#007AFF" />
           </View>
-          <Text style={styles.userName}>
-            {user?.displayName || user?.email?.split('@')[0] || 'User'}
-          </Text>
-          <Text style={styles.userEmail}>{user?.email}</Text>
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>
+              {user?.displayName || user?.email || 'User'}
+            </Text>
+            <Text style={styles.userEmail}>{user?.email}</Text>
+          </View>
         </View>
+      </View>
 
-        <View style={styles.menuSection}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.menuItem}
-              onPress={item.onPress}
-            >
-              <View style={styles.menuItemLeft}>
-                <View style={styles.menuIcon}>
-                  <Ionicons name={item.icon} size={24} color="#007AFF" />
-                </View>
-                <View style={styles.menuText}>
-                  <Text style={styles.menuTitle}>{item.title}</Text>
-                  <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#ccc" />
-            </TouchableOpacity>
-          ))}
-        </View>
+      {/* Menu Items */}
+      <ScrollView style={styles.menuContainer} showsVerticalScrollIndicator={false}>
+        <MenuItem
+          icon="person-outline"
+          title="Personal Information"
+          description="Manage your account details"
+          onPress={handlePersonalInfo}
+        />
+        
+        <MenuItem
+          icon="card-outline"
+          title="Payment Methods"
+          description="Manage your payment options"
+          onPress={handlePaymentMethods}
+        />
+        
+        <MenuItem
+          icon="location-outline"
+          title="Shipping Addresses"
+          description="Manage your delivery addresses"
+          onPress={handleShippingAddresses}
+        />
+        
+        <MenuItem
+          icon="document-text-outline"
+          title="Order History"
+          description="View your past orders"
+          onPress={handleOrderHistory}
+        />
+        
+        <MenuItem
+          icon="settings-outline"
+          title="Settings"
+          description="App preferences and notifications"
+          onPress={handleSettings}
+        />
+        
+        <MenuItem
+          icon="help-circle-outline"
+          title="Help & Support"
+          description="Get help and contact support"
+          onPress={handleHelpSupport}
+        />
 
+        {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color="#FF4444" />
+          <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
-
-        <View style={styles.footer}>
-          <Text style={styles.version}>Version 1.0.0</Text>
-          <Text style={styles.copyright}>© 2024 ElectroStore. All rights reserved.</Text>
-        </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F2F2F7',
   },
   header: {
     backgroundColor: '#fff',
-    padding: 20,
-    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e5e9',
+    borderBottomColor: '#E5E5EA',
   },
-  avatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#f0f0f0',
+  profileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F2F2F7',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginRight: 16,
+  },
+  userInfo: {
+    flex: 1,
   },
   userName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#000',
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 16,
-    color: '#666',
+    color: '#8E8E93',
   },
-  menuSection: {
-    backgroundColor: '#fff',
-    marginTop: 20,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    overflow: 'hidden',
+  menuContainer: {
+    flex: 1,
+    paddingTop: 20,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    backgroundColor: '#fff',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#E5E5EA',
   },
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-  menuIcon: {
+  iconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#F2F2F7',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
   },
-  menuText: {
+  menuItemText: {
     flex: 1,
   },
-  menuTitle: {
-    fontSize: 16,
+  menuItemTitle: {
+    fontSize: 17,
     fontWeight: '600',
-    color: '#333',
+    color: '#000',
     marginBottom: 2,
   },
-  menuSubtitle: {
+  menuItemDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#8E8E93',
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#fff',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     marginTop: 20,
-    marginHorizontal: 16,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#FF4444',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5EA',
   },
   logoutText: {
-    color: '#FF4444',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
-    marginLeft: 8,
+    color: '#FF3B30',
+    marginLeft: 16,
   },
-  footer: {
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    marginTop: 20,
+    backgroundColor: '#F2F2F7',
   },
-  version: {
-    fontSize: 14,
-    color: '#999',
-    marginBottom: 4,
-  },
-  copyright: {
-    fontSize: 12,
-    color: '#ccc',
-    textAlign: 'center',
+  loadingText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
   },
 });

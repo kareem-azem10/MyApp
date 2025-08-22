@@ -2,14 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -39,6 +39,9 @@ export default function SignupScreen() {
     try {
       setLoading(true);
       await signup(email, password);
+      
+      // After successful signup, user is automatically signed in
+      // Navigate to tabs
       router.replace('/(tabs)');
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -113,6 +116,15 @@ export default function SignupScreen() {
           >
             <Text style={styles.linkText}>
               Already have an account? Sign in
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.skipButton}
+            onPress={() => router.replace('/(tabs)')}
+          >
+            <Text style={styles.skipText}>
+              Continue as Guest
             </Text>
           </TouchableOpacity>
         </View>
@@ -191,5 +203,16 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#007AFF',
     fontSize: 16,
+  },
+  skipButton: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 16,
+    paddingVertical: 8,
+  },
+  skipText: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
