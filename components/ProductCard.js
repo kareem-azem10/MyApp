@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
     Dimensions,
@@ -8,13 +8,22 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { useCart } from '../contexts/CartContext';
 
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2; // 2 columns with margins
 
 export default function ProductCard({ product }) {
+  const { addToCart } = useCart();
+  const router = useRouter();
+
   const gotoDetails = () => {
-    router.push(`/product/${product.id}`);
+    // Special handling for iPhone 15
+    if (product.id === 'iphone-15') {
+      router.push('/iphone-15');
+    } else {
+      router.push(`/product/${product.id}`);
+    }
   };
 
   return (

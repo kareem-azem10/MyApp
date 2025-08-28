@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
     Alert,
@@ -19,6 +19,7 @@ export default function SignupScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signup } = useAuth();
+  const router = useRouter();
 
   const handleSignup = async () => {
     if (!email || !password || !confirmPassword) {

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
     Alert,
@@ -17,6 +17,7 @@ import { useCart } from '../../contexts/CartContext';
 export default function CartScreen() {
   const { items, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
   const { user } = useAuth();
+  const router = useRouter();
 
   const handleCheckout = () => {
     if (items.length === 0) {
@@ -46,15 +47,17 @@ export default function CartScreen() {
     // User is logged in, proceed with checkout
     Alert.alert(
       'Checkout',
-      `Total: $${getCartTotal().toFixed(2)}\n\nProceed to checkout?`,
+      `Total: $${getCartTotal().toFixed(2)}\n\nProceed to payment?`,
       [
         { text: 'Cancel', style: 'cancel' },
         { 
-          text: 'Checkout', 
+          text: 'Continue to Payment', 
           onPress: () => {
-            // Navigate to order confirmation screen
-            router.push('/order-confirmation');
-            clearCart();
+            // Navigate to payment screen with total amount
+            router.push({
+              pathname: '/payment',
+              params: { total: getCartTotal().toFixed(2) }
+            });
           }
         }
       ]
@@ -134,6 +137,18 @@ export default function CartScreen() {
               </TouchableOpacity>
             </View>
           )}
+          
+          {/* Featured Product */}
+          <View style={styles.featuredProductContainer}>
+            <Text style={styles.featuredProductTitle}>Check out our latest iPhone!</Text>
+            <TouchableOpacity
+              style={styles.featuredProductButton}
+              onPress={() => router.push('/iphone-15')}
+            >
+              <Ionicons name="phone-portrait" size={24} color="#007AFF" />
+              <Text style={styles.featuredProductButtonText}>Shop iPhone 15</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -210,7 +225,7 @@ export default function CartScreen() {
             disabled={!user}
           >
             <Text style={styles.checkoutButtonText}>
-              {user ? 'Proceed to Checkout' : 'Checkout (Sign In Required)'}
+              {user ? 'Proceed to Payment' : 'Payment (Sign In Required)'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -465,6 +480,36 @@ const styles = StyleSheet.create({
   },
   emptySkipText: {
     color: '#007AFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  featuredProductContainer: {
+    marginTop: 32,
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e1e5e9',
+  },
+  featuredProductTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  featuredProductButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+    gap: 8,
+  },
+  featuredProductButtonText: {
+    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

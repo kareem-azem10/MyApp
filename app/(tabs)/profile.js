@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
     Alert,
@@ -30,6 +30,7 @@ const MenuItem = ({ icon, title, description, onPress, showArrow = true }) => (
 
 export default function ProfileScreen() {
   const { user, logout, loading } = useAuth();
+  const router = useRouter();
 
   // Show loading state while auth is initializing
   if (loading) {

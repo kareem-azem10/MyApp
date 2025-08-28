@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -21,6 +22,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     loadProducts();
@@ -75,6 +77,29 @@ export default function HomeScreen() {
           </View>
         )}
       </View>
+
+      {/* Featured iPhone 15 Section */}
+      {/* <View style={styles.featuredSection}>
+        <Text style={styles.featuredTitle}>Featured Product</Text>
+        <TouchableOpacity
+          style={styles.featuredCard}
+          onPress={() => router.push('/iphone-15')}
+        >
+          <View style={styles.featuredImageContainer}>
+            <Ionicons name="phone-portrait" size={80} color="#007AFF" />
+          </View>
+          <View style={styles.featuredContent}>
+            <Text style={styles.featuredProductName}>iPhone 15</Text>
+            <Text style={styles.featuredDescription}>
+              Choose from iPhone 15, 15 Pro, or 15 Pro Max with customizable storage and colors
+            </Text>
+            <View style={styles.featuredPriceRow}>
+              <Text style={styles.featuredPrice}>From $799</Text>
+              <Ionicons name="arrow-forward" size={20} color="#007AFF" />
+            </View>
+          </View>
+        </TouchableOpacity>
+      </View> */}
 
       <FlatList
         data={products}
@@ -142,6 +167,55 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  featuredSection: {
+    padding: 20,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e1e5e9',
+  },
+  featuredTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 16,
+  },
+  featuredCard: {
+    flexDirection: 'row',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#e1e5e9',
+  },
+  featuredImageContainer: {
+    marginRight: 16,
+    justifyContent: 'center',
+  },
+  featuredContent: {
+    flex: 1,
+  },
+  featuredProductName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  featuredDescription: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  featuredPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  featuredPrice: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#007AFF',
   },
   loadingContainer: {
     flex: 1,

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
     StyleSheet,
@@ -10,6 +10,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OrderConfirmationScreen() {
+  const router = useRouter();
+
   const handleContinueShopping = () => {
     router.replace('/(tabs)');
   };
