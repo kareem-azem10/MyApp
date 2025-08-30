@@ -77,9 +77,8 @@ export default function TabLayout() {
             ),
           }}
         />
-      />
-    </Tabs>
-  </AuthWrapper>
+      </Tabs>
+    </AuthWrapper>
   );
 }
 

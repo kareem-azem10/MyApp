@@ -1,24 +1,10 @@
 // Stripe configuration for test mode
-export const STRIPE_CONFIG = {
-  // Test mode publishable key (you'll need to replace with your actual test key)
-  publishableKey: 'pk_test_51234567890abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz',
-  
-  // Test mode settings
-  testMode: true,
-  
-  // Test card numbers for Visa
-  testCards: {
-    visa: {
-      success: '4242424242424242',
-      declined: '4000000000000002',
-      insufficientFunds: '4000000000009995'
-    },
-    mastercard: {
-      success: '5555555555554444',
-      declined: '5000000000000009'
-    }
-  }
+// Replace the publishableKey value with your Stripe test publishable key (pk_test_...)
+export const stripeConfig = {
+  // IMPORTANT: Set your own test publishable key from the Stripe Dashboard
+  publishableKey: 'pk_test_replace_me',
+  merchantIdentifier: 'merchant.com.example', // iOS Apple Pay merchant ID (optional for now)
+  urlScheme: 'myapp', // required for 3D Secure on iOS (update if you use a custom scheme)
 };
 
-// Note: Replace the publishableKey above with your actual Stripe test publishable key
-// You can get this from your Stripe Dashboard > Developers > API keys
+export default stripeConfig;

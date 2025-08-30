@@ -1,19 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
+import { CardField } from '@stripe/stripe-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-    Alert,
-    Animated,
-    Dimensions,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Animated,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useCart } from '../contexts/CartContext';
 
@@ -24,13 +25,10 @@ export default function PaymentScreen() {
   const { clearCart } = useCart();
   const router = useRouter();
   
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardHolder, setCardHolder] = useState('');
-  const [expiryMonth, setExpiryMonth] = useState('');
-  const [expiryYear, setExpiryYear] = useState('');
-  const [cvv, setCvv] = useState('');
+  const [cardDetails, setCardDetails] = useState(null);
+  const [cardholderName, setCardholderName] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [focusedInput, setFocusedInput] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -77,38 +75,6 @@ export default function PaymentScreen() {
     }
   }, [isProcessing]);
 
-  const formatCardNumber = (text) => {
-    const cleaned = text.replace(/\s/g, '');
-    const groups = cleaned.match(/.{1,4}/g);
-    return groups ? groups.join(' ') : cleaned;
-  };
-
-  const validateCardNumber = (number) => {
-    const cleaned = number.replace(/\s/g, '');
-    // Basic card validation (Visa, Mastercard, Amex)
-    return /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3[0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})$/.test(cleaned);
-  };
-
-  const validateExpiry = (month, year) => {
-    if (!month || !year) return false;
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear() % 100;
-    const currentMonth = currentDate.getMonth() + 1;
-    
-    const expMonth = parseInt(month);
-    const expYear = parseInt(year);
-    
-    if (expMonth < 1 || expMonth > 12) return false;
-    if (expYear < currentYear) return false;
-    if (expYear === currentYear && expMonth < currentMonth) return false;
-    
-    return true;
-  };
-
-  const validateCVV = (cvv) => {
-    return /^\d{3,4}$/.test(cvv);
-  };
-
   const animateCardUpdate = () => {
     Animated.sequence([
       Animated.timing(cardAnim, {
@@ -125,20 +91,12 @@ export default function PaymentScreen() {
   };
 
   const validateForm = () => {
-    if (!validateCardNumber(cardNumber)) {
-      Alert.alert('Invalid Card', 'Please enter a valid card number');
+    if (!cardDetails || !cardDetails.complete) {
+      Alert.alert('Incomplete Card', 'Please enter complete card details');
       return false;
     }
-    if (!cardHolder.trim()) {
-      Alert.alert('Invalid Input', 'Please enter the cardholder name');
-      return false;
-    }
-    if (!validateExpiry(expiryMonth, expiryYear)) {
-      Alert.alert('Invalid Expiry', 'Please enter a valid expiry date');
-      return false;
-    }
-    if (!validateCVV(cvv)) {
-      Alert.alert('Invalid CVV', 'Please enter a valid 3 or 4 digit CVV');
+    if (!cardholderName.trim()) {
+      Alert.alert('Missing Name', 'Please enter the cardholder\'s name');
       return false;
     }
     return true;
@@ -156,28 +114,17 @@ export default function PaymentScreen() {
   };
 
   const simulateStripePayment = async () => {
-    // Simulate Stripe payment processing
-    return new Promise((resolve, reject) => {
+    // Simulate Stripe payment processing (test mode)
+    return new Promise((resolve) => {
       setTimeout(() => {
-        // Check if we're using a test card that should fail
-        const cardNumber = cardNumber.replace(/\s/g, '');
-        
-        if (cardNumber === '4000000000000002') {
-          reject(new Error('Your card was declined. Please try a different card.'));
-          return;
-        }
-        
-        if (cardNumber === '4000000000009995') {
-          reject(new Error('Your card has insufficient funds.'));
-          return;
-        }
-
-        // Simulate successful payment
         resolve({
           success: true,
           transactionId: 'pi_' + Math.random().toString(36).substr(2, 24).toLowerCase(),
           amount: total,
-          testMode: true
+          testMode: true,
+          brand: cardDetails?.brand,
+          last4: cardDetails?.last4,
+          cardholderName,
         });
       }, 2000);
     });
@@ -208,6 +155,7 @@ export default function PaymentScreen() {
       
       if (result.success) {
         // Show success animation
+        setShowSuccess(true);
         Animated.sequence([
           Animated.timing(successAnim, {
             toValue: 1,
@@ -251,9 +199,7 @@ export default function PaymentScreen() {
       <View style={styles.cardHeader}>
         <View style={styles.cardLogo}>
           <Text style={styles.cardLogoText}>
-            {cardNumber.startsWith('4') ? 'VISA' : 
-             cardNumber.startsWith('5') ? 'MC' : 
-             cardNumber.startsWith('3') ? 'AMEX' : 'CARD'}
+            {(cardDetails?.brand || 'CARD').toString().toUpperCase()}
           </Text>
         </View>
         <Ionicons name="wifi" size={20} color="#fff" />
@@ -261,7 +207,7 @@ export default function PaymentScreen() {
       
       <View style={styles.cardNumberContainer}>
         <Text style={styles.cardNumberText}>
-          {cardNumber || '•••• •••• •••• ••••'}
+          {cardDetails?.last4 ? `•••• •••• •••• ${cardDetails.last4}` : '•••• •••• •••• ••••'}
         </Text>
       </View>
       
@@ -269,13 +215,15 @@ export default function PaymentScreen() {
         <View>
           <Text style={styles.cardLabel}>CARD HOLDER</Text>
           <Text style={styles.cardValue}>
-            {cardHolder || 'YOUR NAME'}
+            {cardholderName ? cardholderName.toUpperCase() : 'YOUR NAME'}
           </Text>
         </View>
         <View>
           <Text style={styles.cardLabel}>EXPIRES</Text>
           <Text style={styles.cardValue}>
-            {expiryMonth && expiryYear ? `${expiryMonth}/${expiryYear}` : 'MM/YY'}
+            {cardDetails?.expiryMonth && cardDetails?.expiryYear
+              ? `${String(cardDetails.expiryMonth).padStart(2, '0')}/${String(cardDetails.expiryYear).slice(-2)}`
+              : 'MM/YY'}
           </Text>
         </View>
       </View>
@@ -389,7 +337,7 @@ export default function PaymentScreen() {
             </View>
           </View>
 
-          {/* Payment Form */}
+          {/* Payment Form (Stripe Test Mode) */}
           <Animated.View 
             style={[
               styles.formContainer,
@@ -400,123 +348,32 @@ export default function PaymentScreen() {
             ]}
           >
             <Text style={styles.sectionTitle}>Card Details</Text>
-            
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Card Number</Text>
-              <TextInput
-                style={[
-                  styles.textInput,
-                  focusedInput === 'cardNumber' && styles.textInputFocused,
-                  cardNumber && !validateCardNumber(cardNumber) && styles.textInputError
-                ]}
-                value={cardNumber}
-                onChangeText={(text) => {
-                  setCardNumber(formatCardNumber(text));
-                  animateCardUpdate();
-                }}
-                placeholder="4242 4242 4242 4242"
-                keyboardType="numeric"
-                maxLength={19}
-                placeholderTextColor="#999"
-                onFocus={() => setFocusedInput('cardNumber')}
-                onBlur={() => setFocusedInput(null)}
-              />
-              {cardNumber && !validateCardNumber(cardNumber) && (
-                <Text style={styles.errorText}>Please enter a valid card number</Text>
-              )}
-            </View>
-
-            <View style={styles.row}>
-              <View style={[styles.inputGroup, styles.halfWidth]}>
-                <Text style={styles.inputLabel}>Expiry Month</Text>
-                <TextInput
-                  style={[
-                    styles.textInput,
-                    focusedInput === 'expiryMonth' && styles.textInputFocused,
-                    expiryMonth && !validateExpiry(expiryMonth, expiryYear) && styles.textInputError
-                  ]}
-                  value={expiryMonth}
-                  onChangeText={(text) => {
-                    setExpiryMonth(text.replace(/\D/g, '').slice(0, 2));
-                    animateCardUpdate();
-                  }}
-                  placeholder="MM"
-                  keyboardType="numeric"
-                  maxLength={2}
-                  placeholderTextColor="#999"
-                  onFocus={() => setFocusedInput('expiryMonth')}
-                  onBlur={() => setFocusedInput(null)}
-                />
-              </View>
-              
-              <View style={[styles.inputGroup, styles.halfWidth]}>
-                <Text style={styles.inputLabel}>Expiry Year</Text>
-                <TextInput
-                  style={[
-                    styles.textInput,
-                    focusedInput === 'expiryYear' && styles.textInputFocused,
-                    expiryYear && !validateExpiry(expiryMonth, expiryYear) && styles.textInputError
-                  ]}
-                  value={expiryYear}
-                  onChangeText={(text) => {
-                    setExpiryYear(text.replace(/\D/g, '').slice(0, 2));
-                    animateCardUpdate();
-                  }}
-                  placeholder="YY"
-                  keyboardType="numeric"
-                  maxLength={2}
-                  placeholderTextColor="#999"
-                  onFocus={() => setFocusedInput('expiryYear')}
-                  onBlur={() => setFocusedInput(null)}
-                />
-              </View>
-              
-              <View style={[styles.inputGroup, styles.halfWidth]}>
-                <Text style={styles.inputLabel}>CVV</Text>
-                <TextInput
-                  style={[
-                    styles.textInput,
-                    focusedInput === 'cvv' && styles.textInputFocused,
-                    cvv && !validateCVV(cvv) && styles.textInputError
-                  ]}
-                  value={cvv}
-                  onChangeText={(text) => setCvv(text.replace(/\D/g, '').slice(0, 4))}
-                  placeholder="123"
-                  keyboardType="numeric"
-                  maxLength={4}
-                  placeholderTextColor="#999"
-                  onFocus={() => setFocusedInput('cvv')}
-                  onBlur={() => setFocusedInput(null)}
-                />
-              </View>
-            </View>
-
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Cardholder Name</Text>
               <TextInput
-                style={[
-                  styles.textInput,
-                  focusedInput === 'cardHolder' && styles.textInputFocused
-                ]}
-                value={cardHolder}
-                onChangeText={(text) => {
-                  setCardHolder(text);
-                  animateCardUpdate();
-                }}
-                placeholder="John Doe"
+                style={styles.textInput}
+                placeholder="Name on card"
                 autoCapitalize="words"
-                placeholderTextColor="#999"
-                onFocus={() => setFocusedInput('cardHolder')}
-                onBlur={() => setFocusedInput(null)}
+                value={cardholderName}
+                onChangeText={setCardholderName}
+                returnKeyType="next"
               />
             </View>
-
-            {/* Test Mode Info */}
-            <View style={styles.testModeInfo}>
-              <Ionicons name="information-circle" size={16} color="#FF9500" />
-              <Text style={styles.testModeText}>
-                Test Mode: Use card 4242 4242 4242 4242 for successful payments
-              </Text>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Card</Text>
+              <CardField
+                postalCodeEnabled={true}
+                placeholders={{ number: '4242 4242 4242 4242' }}
+                cardStyle={{
+                    backgroundColor: '#FFFFFF',
+                    textColor: '#333333',
+                }}
+                style={{ width: '100%', height: 50 }}
+                onCardChange={(details) => {
+                  setCardDetails(details);
+                  animateCardUpdate();
+                }}
+              />
             </View>
 
             {/* Total and Pay Button */}
@@ -543,10 +400,10 @@ export default function PaymentScreen() {
       </KeyboardAvoidingView>
 
       {/* Processing Overlay */}
-      {renderProcessingAnimation()}
+      {isProcessing && renderProcessingAnimation()}
       
       {/* Success Overlay */}
-      {renderSuccessAnimation()}
+      {showSuccess && renderSuccessAnimation()}
     </SafeAreaView>
   );
 }
