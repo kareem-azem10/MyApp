@@ -2,18 +2,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-  Alert,
-  Animated,
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Animated,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useCart } from '../contexts/CartContext';
 
@@ -144,20 +144,41 @@ export default function PaymentScreen() {
     return true;
   };
 
+  const processPayment = async () => {
+    try {
+      // Simulate payment processing with Stripe-like behavior
+      const paymentResponse = await simulateStripePayment();
+      
+      return paymentResponse;
+    } catch (error) {
+      throw new Error(`Payment failed: ${error.message}`);
+    }
+  };
+
   const simulateStripePayment = async () => {
-    // Simulate Stripe API call
+    // Simulate Stripe payment processing
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        // Simulate 90% success rate
-        if (Math.random() > 0.1) {
-          resolve({
-            success: true,
-            transactionId: 'txn_' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-            amount: total
-          });
-        } else {
-          reject(new Error('Payment failed. Please try again.'));
+        // Check if we're using a test card that should fail
+        const cardNumber = cardNumber.replace(/\s/g, '');
+        
+        if (cardNumber === '4000000000000002') {
+          reject(new Error('Your card was declined. Please try a different card.'));
+          return;
         }
+        
+        if (cardNumber === '4000000000009995') {
+          reject(new Error('Your card has insufficient funds.'));
+          return;
+        }
+
+        // Simulate successful payment
+        resolve({
+          success: true,
+          transactionId: 'pi_' + Math.random().toString(36).substr(2, 24).toLowerCase(),
+          amount: total,
+          testMode: true
+        });
       }, 2000);
     });
   };
@@ -182,8 +203,8 @@ export default function PaymentScreen() {
     setIsProcessing(true);
     
     try {
-      // Simulate Stripe payment processing
-      const result = await simulateStripePayment();
+      // Process payment with Stripe simulation
+      const result = await processPayment();
       
       if (result.success) {
         // Show success animation
@@ -393,7 +414,7 @@ export default function PaymentScreen() {
                   setCardNumber(formatCardNumber(text));
                   animateCardUpdate();
                 }}
-                placeholder="1234 5678 9012 3456"
+                placeholder="4242 4242 4242 4242"
                 keyboardType="numeric"
                 maxLength={19}
                 placeholderTextColor="#999"
@@ -403,26 +424,6 @@ export default function PaymentScreen() {
               {cardNumber && !validateCardNumber(cardNumber) && (
                 <Text style={styles.errorText}>Please enter a valid card number</Text>
               )}
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Cardholder Name</Text>
-              <TextInput
-                style={[
-                  styles.textInput,
-                  focusedInput === 'cardHolder' && styles.textInputFocused
-                ]}
-                value={cardHolder}
-                onChangeText={(text) => {
-                  setCardHolder(text);
-                  animateCardUpdate();
-                }}
-                placeholder="John Doe"
-                autoCapitalize="words"
-                placeholderTextColor="#999"
-                onFocus={() => setFocusedInput('cardHolder')}
-                onBlur={() => setFocusedInput(null)}
-              />
             </View>
 
             <View style={styles.row}>
@@ -488,6 +489,34 @@ export default function PaymentScreen() {
                   onBlur={() => setFocusedInput(null)}
                 />
               </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Cardholder Name</Text>
+              <TextInput
+                style={[
+                  styles.textInput,
+                  focusedInput === 'cardHolder' && styles.textInputFocused
+                ]}
+                value={cardHolder}
+                onChangeText={(text) => {
+                  setCardHolder(text);
+                  animateCardUpdate();
+                }}
+                placeholder="John Doe"
+                autoCapitalize="words"
+                placeholderTextColor="#999"
+                onFocus={() => setFocusedInput('cardHolder')}
+                onBlur={() => setFocusedInput(null)}
+              />
+            </View>
+
+            {/* Test Mode Info */}
+            <View style={styles.testModeInfo}>
+              <Ionicons name="information-circle" size={16} color="#FF9500" />
+              <Text style={styles.testModeText}>
+                Test Mode: Use card 4242 4242 4242 4242 for successful payments
+              </Text>
             </View>
 
             {/* Total and Pay Button */}
@@ -816,5 +845,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
     textAlign: 'center',
+  },
+  testModeInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff3cd',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#ffeaa7',
+  },
+  testModeText: {
+    fontSize: 12,
+    color: '#856404',
+    marginLeft: 8,
+    flex: 1,
   },
 });
